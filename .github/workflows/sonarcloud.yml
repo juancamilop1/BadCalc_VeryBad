@@ -1,29 +1,27 @@
-name: SonarCloud Scan
-
+name: SonarCloud
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - master
 
 jobs:
-  build:
-    name: Build and analyze
-    runs-on: ubuntu-latest
+  sonarcloud:
+    name: SonarCloud Scan
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
+      - uses: sonarsource/sonarcloud-github-action@v2
         with:
-          distribution: 'temurin'
-          java-version: 17
-
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@d67e105d53e7d334c7a6a8b25e936dfacd13f35e
+          projectKey: juancamilop1_BadCalc_VeryBad
+          organization: juancamilop1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
