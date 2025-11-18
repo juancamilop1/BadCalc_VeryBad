@@ -1,17 +1,40 @@
+name: SonarCloud
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+    types:
+      - opened
+      - synchronize
+      - reopened
+
 jobs:
   build:
+    name: Build and Analyze
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
+    steps:
+      # 1️⃣ Clonar el repositorio
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2️⃣ Configurar .NET
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: 8.0.x
 
+      # 3️⃣ Instalar SonarScanner para .NET
       - name: Install SonarScanner for .NET
         run: dotnet tool install --global dotnet-sonarscanner
 
+      # 4️⃣ Iniciar análisis SonarCloud
       - name: Begin SonarCloud Analysis
         run: |
           dotnet sonarscanner begin \
@@ -19,14 +42,18 @@ jobs:
             /o:"juancamilop1" \
             /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
+      # 5️⃣ Restaurar dependencias
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Build project
+      # 6️⃣ Compilar el proyecto
+      - name: Build
         run: dotnet build --no-restore
 
-      - name: Run tests
+      # 7️⃣ Ejecutar pruebas
+      - name: Test
         run: dotnet test --no-build --verbosity normal
 
+      # 8️⃣ Finalizar análisis SonarCloud
       - name: End SonarCloud Analysis
         run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
