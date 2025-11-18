@@ -9,19 +9,38 @@ on:
       - master
 
 jobs:
-  sonarcloud:
-    name: SonarCloud Scan
-    runs-on: windows-latest
+  build:
+    name: Build and Analyze
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: sonarsource/sonarcloud-github-action@v2
+      # Instalar dependencias si tu proyecto usa .NET
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
-          projectKey: juancamilop1_BadCalc_VeryBad
-          organization: juancamilop1
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore
+
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
+
+      - name: Run SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=juancamilop1_BadCalc_VeryBad
+            -Dsonar.organization=juancamilop1
+            -Dsonar.host.url=https://sonarcloud.io
