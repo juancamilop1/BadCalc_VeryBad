@@ -10,8 +10,8 @@ using System.Threading;
 
 namespace BadCalcVeryBad
 {
-  
 
+//revision de errores
     public class U
     {
         public static ArrayList G = new ArrayList(); 
