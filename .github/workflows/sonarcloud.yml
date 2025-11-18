@@ -1,33 +1,29 @@
-name: SonarCloud
+name: SonarCloud Scan
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - main
   pull_request:
-    types: [opened, synchronize, reopened]
 
 jobs:
   build:
     name: Build and analyze
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@b4ffde3c0d19d9c7d7065f7d67c5226f193a0ec8
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@50cfaa37e2fa327be6b1816b0181aef74c9b3e75
+      - uses: actions/checkout@v4
         with:
-          dotnet-version: '7.0.x'
+          fetch-depth: 0
 
-      - name: Restore
-        run: dotnet restore
-
-      - name: Build
-        run: dotnet build --no-restore --configuration Release
-
-      - name: Test
-        run: dotnet test --no-build
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: 17
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@f3bd7a1df7109184505335eab83f
+        uses: SonarSource/sonarcloud-github-action@d67e105d53e7d334c7a6a8b25e936dfacd13f35e
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
