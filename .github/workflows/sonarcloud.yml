@@ -2,23 +2,21 @@ name: SonarCloud
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
   build:
-    name: Build, Test and Analyze
+    name: Build and analyze
     runs-on: windows-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        uses: actions/checkout@b4ffde3c0d19d9c7d7065f7d67c5226f193a0ec8
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@50cfaa37e2fa327be6b1816b0181aef74c9b3e75
         with:
           dotnet-version: '7.0.x'
 
@@ -28,14 +26,8 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      - name: Run tests (collect coverage)
-        run: dotnet test --no-build --configuration Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+      - name: Test
+        run: dotnet test --no-build
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v2
-        with:
-          projectKey: 'TU_ORG_TU_PROYECTO'    # opcional: SonarCloud suele autoconfigurarlo al importar
-          organization: 'TU_ORG'             # opcional
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: SonarSource/sonarcloud-github-action@f3bd7a1df7109184505335eab83f
