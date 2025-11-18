@@ -78,7 +78,7 @@ namespace BadCalcVeryBad
         public static ShoddyCalc calc = new ShoddyCalc();
         public static U globals = new U();
 
-        static void Main(string[] args)
+        static void Hola(string[] args)
         {
             try
             {
