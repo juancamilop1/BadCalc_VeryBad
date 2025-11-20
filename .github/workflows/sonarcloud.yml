@@ -25,7 +25,8 @@ jobs:
         dotnet-version: '8.0.x'
 
     - name: Restore dependencies
-      run: dotnet restore BadCleanArch.sln
+      working-directory: ${{ github.workspace }}
+      run: dotnet restore ./BadCleanArch.sln
 
     - name: Install SonarScanner for .NET
       run: dotnet tool install --global dotnet-sonarscanner
@@ -34,6 +35,7 @@ jobs:
       run: echo "${HOME}/.dotnet/tools" >> $GITHUB_PATH
 
     - name: Begin SonarCloud analysis
+      working-directory: ${{ github.workspace }}
       run: |
         dotnet-sonarscanner begin \
           /k:"juancamilop1_BadCleanArch" \
@@ -42,7 +44,9 @@ jobs:
           /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
     - name: Build solution
-      run: dotnet build BadCleanArch.sln --configuration Release --no-restore
+      working-directory: ${{ github.workspace }}
+      run: dotnet build ./BadCleanArch.sln --configuration Release --no-restore
 
     - name: End SonarCloud analysis
+      working-directory: ${{ github.workspace }}
       run: dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
