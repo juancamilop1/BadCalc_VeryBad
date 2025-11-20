@@ -1,59 +1,48 @@
-name: SonarCloud
+name: SonarCloud Analysis
 
 on:
   push:
-    branches:
-      - master
+    branches: [ master, main ]
   pull_request:
-    branches:
-      - master
-    types:
-      - opened
-      - synchronize
-      - reopened
+    branches: [ master, main ]
 
 jobs:
   build:
-    name: Build and Analyze
     runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      # 1️⃣ Clonar el repositorio
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
-      # 2️⃣ Configurar .NET
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
 
-      # 3️⃣ Instalar SonarScanner para .NET
-      - name: Install SonarScanner for .NET
-        run: dotnet tool install --global dotnet-sonarscanner
+    - name: Restore dependencies
+      run: dotnet restore BadCleanArch.sln
 
-      # 4️⃣ Iniciar análisis SonarCloud
-      - name: Begin SonarCloud Analysis
-        run: |
-          dotnet sonarscanner begin \
-            /k:"juancamilop1_BadCalc_VeryBad" \
-            /o:"juancamilop1" \
-            /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+    - name: Install SonarScanner for .NET
+      run: dotnet tool install --global dotnet-sonarscanner
 
-      # 5️⃣ Restaurar dependencias
-      - name: Restore dependencies
-        run: dotnet restore
+    - name: Add dotnet tools to PATH
+      run: echo "${HOME}/.dotnet/tools" >> $GITHUB_PATH
 
-      # 6️⃣ Compilar el proyecto
-      - name: Build
-        run: dotnet build --no-restore
+    - name: Begin SonarCloud analysis
+      run: |
+        dotnet-sonarscanner begin \
+          /k:"juancamilop1_BadCleanArch" \
+          /o:"juancamilop1" \
+          /d:sonar.host.url="https://sonarcloud.io" \
+          /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
-      # 7️⃣ Ejecutar pruebas
-      - name: Test
-        run: dotnet test --no-build --verbosity normal
+    - name: Build solution
+      run: dotnet build BadCleanArch.sln --configuration Release --no-restore
 
-      # 8️⃣ Finalizar análisis SonarCloud
-      - name: End SonarCloud Analysis
-        run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+    - name: End SonarCloud analysis
+      run: dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
